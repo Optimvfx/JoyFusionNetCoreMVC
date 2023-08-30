@@ -7,6 +7,10 @@ public class PostEntityTypeConfiguration : IEntityTypeConfiguration<Post>
 {
     public void Configure(EntityTypeBuilder<Post> builder)
     {
+        builder.HasIndex(p => p.PublishDate);
+        builder.HasIndex(p => p.LikesCount);
+        builder.HasIndex(p => p.CommentsCount);
+    
         builder.HasMany(p => p.Likes)
             .WithOne(l => l.Post)
             .HasForeignKey(l => l.PostId)

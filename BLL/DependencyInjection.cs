@@ -8,9 +8,12 @@ namespace BLL;
 public static class DependencyInjection
 {
     public static IServiceCollection AddServices(this IServiceCollection
-        services)
+        services, ITimeService? customTimeService = null)
     {
-        services.AddScoped<ITimeService, StandartTimeService>();
+        if(customTimeService == null)
+            services.AddScoped<ITimeService, StandartTimeService>();
+        else 
+            services.AddScoped<ITimeService>((s) => customTimeService);
         
         services.AddScoped<UserService>();
         services.AddScoped<PostService>();

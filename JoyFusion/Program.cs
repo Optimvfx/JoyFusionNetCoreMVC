@@ -38,7 +38,7 @@ if (app.Environment.IsDevelopment())
         var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
 
         if (!dbContext.IsInitialized())
-            ApplicationDbInitializer.Initialize(dbContext);
+            ApplicationDbInitializer.InitializeRoles(dbContext);
     }
 }
 else

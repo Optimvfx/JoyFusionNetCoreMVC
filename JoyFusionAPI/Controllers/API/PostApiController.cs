@@ -23,7 +23,7 @@ public class PostApiController : BaseAuthController
     }
 
     [Display(Name = "Get Popular")]
-    [Route("popular", Name = "Get Popular")]
+    [Route("popular/{page}", Name = "Get Popular")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<PostViewModel>>> GetPopularPosts(int page)
     {
@@ -32,6 +32,26 @@ public class PostApiController : BaseAuthController
             return Ok(result.Value);
 
         return BadRequest();
+    }
+    
+    [Display(Name = "Get New")]
+    [Route("new/{page}", Name = "Get New")]
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<PostViewModel>>> GetNewPosts(int page)
+    {
+        var result = await _logic.TryGetTopByPublishDate(page);
+        if (result.IsSuccess())
+            return Ok(result.Value);
+
+        return BadRequest();
+    }
+
+    [Display(Name = "Get Page Count")]
+    [Route("page/count", Name = "Get Page Count")]
+    [HttpGet]
+    public ActionResult<int> GetPostPageCount()
+    {
+        return _logic.GetPagesCount();
     }
     
     [Display(Name = "Get Post")]

@@ -33,8 +33,9 @@ public class AuthControllerLogic
     
     public async Task<bool> TryRegister(RegisterModel model, HttpContext context)
     {
-        User user = await _userService.RegisterUser(model);
-
+        var userId = await _userService.RegisterUser(model);
+        User user = await _userService.GetUserById(userId);
+        
         await Authenticate(user, context);
 
         return true;

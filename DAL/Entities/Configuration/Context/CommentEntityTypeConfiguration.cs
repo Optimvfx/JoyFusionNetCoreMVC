@@ -8,6 +8,8 @@ public class CommentEntityTypeConfiguration : IEntityTypeConfiguration<Comment>
 {
     public void Configure(EntityTypeBuilder<Comment> builder)
     {
+        builder.HasIndex(p => p.CreationDate);
+        
        builder.AfterInsert(trigger => trigger
             .Action(action => action
                 .Update<Post>(

@@ -21,7 +21,7 @@ public static class DependencyInjection
     private static IServiceCollection AddControllersLogicConfigs(this IServiceCollection
         services)
     {
-        services.AddTransient((s) => new PostControllersLogicConfig(15));
+        services.AddTransient((s) => new PostControllersLogicConfig(5));
         
         return services;
     }

@@ -1,9 +1,7 @@
 using BLL;
 using CCL;
 using DAL;
-using Laraue.EfCoreTriggers.SqlLite.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -29,7 +27,7 @@ if (app.Environment.IsDevelopment())
         var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
 
         if (!dbContext.IsInitialized())
-            ApplicationDbInitializer.Initialize(dbContext);
+            ApplicationDbInitializer.InitializeRoles(dbContext);
     }
     
     app.UseSwagger();

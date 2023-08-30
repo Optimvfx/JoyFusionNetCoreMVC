@@ -32,9 +32,8 @@ public class User
     [Required] public virtual ICollection<Post> Posts { get; set; } = null!;
     [Required] public virtual ICollection<Like> Likes { get; set; } = null!;
     [Required] public virtual ICollection<Comment> Comments { get; set; } = null!;
+    [Required] public virtual ICollection<Post> Favorites { get; set; } = null!;
     [Required] public virtual ICollection<Subscription> Subscriptions { get; set; } = null!;
-    
     [Required] public virtual ICollection<Subscription> Subscribers { get; set; } = null!;
-    
     [Required] public virtual ICollection<Notification> Notifications { get; set; } = null!;
 }

@@ -27,25 +27,14 @@ public class PostControllerLogic
 
     public async Task<Result<IEnumerable<PostViewModel>>> TryGetTopByLikes(int page)
     {
-        const int MinimalPostsPerPage = 1;
-
-        var postsCount = _postService.GetPostsCount();
-
-        if (postsCount < MinimalPostsPerPage)
-            return new(ResultStatusCode.Success, new PostViewModel[0]);
-
-        if (page < 0 || page > (postsCount - MinimalPostsPerPage) / _postsPerPage)
-            return new(ResultStatusCode.Failure);
-
-        var skipCount = _postsPerPage * page;
-
-        return new(ResultStatusCode.Success, 
-            _postService.GetPostTopByLike()
-                .Skip(skipCount)
-                .Take(_postsPerPage)
-                .Select(p => _mapper.Map<PostViewModel>(p)));
+        return await GetPostTopPage(PostService.PostOrderType.ByLikes, page);
     }
-
+    
+    public async Task<Result<IEnumerable<PostViewModel>>> TryGetTopByPublishDate(int page)
+    {
+        return await GetPostTopPage(PostService.PostOrderType.ByDate, page);
+    }
+    
     public async Task<Result<Post>> TryGetById(Guid id)
     {
         if (await _postService.PostExist(id))
@@ -55,18 +44,18 @@ public class PostControllerLogic
         return new(ResultStatusCode.Failure);
     }
 
-    public async Task<Result<Guid>> TryCreate(Guid userId, PostCreateRequest request)
+    public async Task<Result<Guid>> TryCreate(Guid authorId, PostCreateRequest request)
     {
-        var newPostId = await _postService.CreatePost(userId, request);
+        var newPostId = await _postService.CreatePost(authorId, request);
         return new(ResultStatusCode.Success, newPostId);
     }
 
-    public async Task<bool> TryDelete(Guid userId, Guid id)
+    public async Task<bool> TryDelete(Guid authorId, Guid id)
     {
-        if (await _postService.PostExist(userId, id) == false)
+        if (await _postService.PostExist(authorId, id) == false)
             return false;
 
-        await _postService.DeletePost(userId, id);
+        await _postService.DeletePost(authorId, id);
         return true;
     }
 
@@ -80,18 +69,46 @@ public class PostControllerLogic
         await _postService.LikePost(id, userId);
     }
 
-    public async Task RemoveLikeFromPost(Guid userId, Guid id)
+    public async Task RemoveLikeFromPost(Guid authorId, Guid id)
     {
-        await _postService.RemoveLikeFromPost(id, userId);
+        await _postService.RemoveLikeFromPost(id, authorId);
     }
     
-    public async Task<bool> PostExist(Guid userId, Guid id)
+    public async Task<bool> PostExist(Guid authorId, Guid id)
     {
-        return await _postService.PostExist(userId, id);
+        return await _postService.PostExist(authorId, id);
     }
     
     public async Task<bool> PostExist(Guid id)
     {
         return await _postService.PostExist(id);
+    }
+
+    public int GetPagesCount()
+    {
+        const int MinimalPostsPerPage = 1;
+        
+        var postsCount = _postService.GetPostsCount();
+
+        return Math.Max(postsCount - MinimalPostsPerPage, 0) / _postsPerPage;
+    }
+    
+    private bool PageIsValid(int page)
+    {
+        var postsCount = _postService.GetPostsCount();
+
+        return page >= 0 && page <= GetPagesCount();
+    }
+
+    private async Task<Result<IEnumerable<PostViewModel>>> GetPostTopPage(PostService.PostOrderType postOrderType, int page)
+    {
+        if (PageIsValid(page) == false)
+            return new(ResultStatusCode.Failure);
+
+        var skipCount = page * _postsPerPage;
+        
+        return new(ResultStatusCode.Success, 
+            _postService.GetPostTopByOrderType(postOrderType, skipCount, _postsPerPage)
+                .Select(p => _mapper.Map<PostViewModel>(p)));
     }
 }
