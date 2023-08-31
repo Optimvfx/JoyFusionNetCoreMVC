@@ -5,6 +5,7 @@ using BLL.Services;
 using CCL.ControllersLogic.Config;
 using Common.Models;
 using DAL.Entities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CCL.ControllersLogic;
 
@@ -33,6 +34,16 @@ public class PostControllerLogic
     public async Task<Result<IEnumerable<PostViewModel>>> TryGetTopByPublishDate(int page)
     {
         return await GetPostTopPage(PostService.PostOrderType.ByDate, page);
+    }
+
+    public async Task<Result<IEnumerable<PostViewModel>>> TryGetUserPostsTopByLikes(int page, Guid userId)
+    {
+        return await TryGetUserPosts(PostService.PostOrderType.ByLikes, userId, page);
+    }
+    
+    public async Task<Result<IEnumerable<PostViewModel>>> TryGetUserPostsTopByPublishDate(int page, Guid userId)
+    {
+        return await TryGetUserPosts(PostService.PostOrderType.ByDate, userId, page);
     }
     
     public async Task<Result<Post>> TryGetById(Guid id)
@@ -84,31 +95,49 @@ public class PostControllerLogic
         return await _postService.PostExist(id);
     }
 
-    public int GetPagesCount()
+    public async Task<int> GetPagesCount(Guid? userId = null)
     {
         const int MinimalPostsPerPage = 1;
         
-        var postsCount = _postService.GetPostsCount();
+        var postsCount = await _postService.GetPostsCount(userId);
 
         return Math.Max(postsCount - MinimalPostsPerPage, 0) / _postsPerPage;
     }
     
-    private bool PageIsValid(int page)
+    private int GetSkipCount(int page)
+    {
+        return  page * _postsPerPage;
+    }
+    
+    private async Task<bool> PageIsValid(int page, Guid? userId = null)
     {
         var postsCount = _postService.GetPostsCount();
 
-        return page >= 0 && page <= GetPagesCount();
+        return page >= 0 && page <= await GetPagesCount(userId);
     }
 
     private async Task<Result<IEnumerable<PostViewModel>>> GetPostTopPage(PostService.PostOrderType postOrderType, int page)
     {
-        if (PageIsValid(page) == false)
+        if (await PageIsValid(page) == false)
             return new(ResultStatusCode.Failure);
 
-        var skipCount = page * _postsPerPage;
         
         return new(ResultStatusCode.Success, 
-            _postService.GetPostTopByOrderType(postOrderType, skipCount, _postsPerPage)
-                .Select(p => _mapper.Map<PostViewModel>(p)));
+            MapPosts(_postService.GetPostTopByOrderType(postOrderType,
+                    GetSkipCount(page), _postsPerPage)));
+    }
+
+    private async Task<Result<IEnumerable<PostViewModel>>> TryGetUserPosts(PostService.PostOrderType postOrderType, Guid userId, int page)
+    {
+        if (await PageIsValid(page, userId) == false)
+            return new(ResultStatusCode.Failure);
+
+        return new(ResultStatusCode.Success,
+            MapPosts(_postService.GetUserPosts(postOrderType, userId, GetSkipCount(page), _postsPerPage)));
+    }
+    
+    private IEnumerable<PostViewModel> MapPosts(IEnumerable<Post> posts)
+    {
+        return posts.Select(p => _mapper.Map<PostViewModel>(p));
     }
 }

@@ -46,12 +46,33 @@ public class PostApiController : BaseAuthController
         return BadRequest();
     }
 
+    [Display(Name = "Get My")]
+    [Route("my/{page}", Name = "Get My")]
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<PostViewModel>>> GetMyPosts(int page)
+    {
+        var result = await _logic.TryGetUserPostsTopByPublishDate(page, GetUserId().Value);
+        if (result.IsSuccess())
+            return Ok(result.Value);
+
+        return BadRequest();
+    }
+
+    [Display(Name = "Get My Page Count")]
+    [Route("my/page/count", Name = "Get My Page Count")]
+    [Authorize]
+    [HttpGet]
+    public async Task<ActionResult<int>> GetMyPostPagesCount()
+    {
+        return await _logic.GetPagesCount(GetUserId().Value);
+    }
+    
     [Display(Name = "Get Page Count")]
     [Route("page/count", Name = "Get Page Count")]
     [HttpGet]
-    public ActionResult<int> GetPostPageCount()
+    public async Task<ActionResult<int>> GetPostPagesCount()
     {
-        return _logic.GetPagesCount();
+        return await _logic.GetPagesCount();
     }
     
     [Display(Name = "Get Post")]

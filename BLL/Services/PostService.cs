@@ -111,6 +111,38 @@ public class PostService
         return post;
     }
 
+    public IEnumerable<Post> GetUserPosts(PostOrderType orderType, Guid userId, int skip, int take)
+    {
+        //Using PostOrderType to walid Skip Take methods.
+        //Take Skip Dont work if IQueryable<Post> send to other method.
+        
+        if (skip < 0 && take <= 0)
+            throw new ArgumentException();
+
+        if (_userService.UserExistById(userId).Result == false)
+            throw new UserNotFoundException();
+
+        if(orderType == PostOrderType.ByLikes)
+            return _db.Posts
+                .Include(p => p.Images)
+                .AsNoTracking()
+                .Where(p => p.AuthorId == userId)
+                .OrderByDescending(p => p.LikesCount)
+                .ThenByDescending(p => p.CommentsCount)
+                .Skip(skip)
+                .Take(take);
+        if(orderType == PostOrderType.ByDate)
+            return _db.Posts
+                .Include(p => p.Images)
+                .AsNoTracking()
+                .Where(p => p.AuthorId == userId)
+                .OrderByDescending(p => p.PublishDate)
+                .Skip(skip)  
+                .Take(take);
+
+        throw new ArgumentException();
+    }
+    
     public IQueryable<Post> GetPostTopByOrderType(PostOrderType orderType, int skip, int take)
     {
         //Using PostOrderType to walid Skip Take methods.
@@ -120,13 +152,17 @@ public class PostService
             throw new ArgumentException();
         
         if(orderType == PostOrderType.ByLikes)
-            return _db.Posts.AsNoTracking().OrderByDescending(p => p.LikesCount)
+            return _db.Posts.AsNoTracking()
+                .Include(p => p.Images)
+                .OrderByDescending(p => p.LikesCount)
                 .ThenByDescending(p => p.CommentsCount)
                 .Skip(skip)
                 .Take(take);
         if(orderType == PostOrderType.ByDate)
-            return _db.Posts.AsNoTracking().OrderByDescending(p => p.PublishDate)
-                .Skip(skip)
+            return _db.Posts.AsNoTracking()
+                .Include(p => p.Images)
+                .OrderByDescending(p => p.PublishDate)
+                .Skip(skip)  
                 .Take(take);
 
         throw new ArgumentException();
@@ -151,12 +187,20 @@ public class PostService
         await _db.Comments.AddAsync(comment);
         await _db.SaveChangesAsync();
     }
-    
-    public int GetPostsCount()
+
+    public async Task<int> GetPostsCount(Guid? userId = null)
     {
-        return _db.Posts.Count();
+        if (userId == null)
+            return _db.Posts.Count();
+
+        if (await _userService.UserExistById(userId.Value) == false)
+            throw new UserNotFoundException();
+
+        return _userService.GetUsersById(userId.Value)
+            .Include(u => u.Posts)
+            .First().Posts.Count;
     }
-    
+
     public enum PostOrderType
     {
         ByDate,

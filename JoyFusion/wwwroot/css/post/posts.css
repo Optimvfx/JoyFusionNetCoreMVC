@@ -1,0 +1,82 @@
+.post-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-title {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.post-content {
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.post-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.info-box {
+    flex-basis: 30%;
+}
+
+.info-box h4 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.post-images {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.post-image {
+    max-width: 100px;
+    max-height: 100px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.pagination-button {
+    display: inline-block;
+    padding: 35px 10px;
+    margin-left: 5%;
+    margin-right: 5%;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    width: 40%;
+    height: auto;
+    text-align: center;
+    vertical-align: center;
+}
+
+.pagination-button {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-right: 5px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pagination-button.disabled {
+    background-color: #333;
+    cursor: not-allowed;
+}
+
+.pagination-button:hover {
+    background-color: #0056b3;
+    color: #fff;
+}

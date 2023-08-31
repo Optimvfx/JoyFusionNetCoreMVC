@@ -1,0 +1,13 @@
+@model IEnumerable<BLL.Models.Post.ViewModels.PostViewModel>
+
+@section Style
+{
+    <link rel="stylesheet" href="~/css/post/posts.css" asp-append-version="true"/>
+}
+
+<div class="container">
+    @foreach(var post in Model)
+    {
+        @await Html.PartialAsync("Partial/_PostInfoPartial.htmlcs", post);
+    }
+</div>

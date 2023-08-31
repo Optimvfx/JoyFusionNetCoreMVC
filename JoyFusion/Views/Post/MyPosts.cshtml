@@ -1,0 +1,41 @@
+@model JoyFusion.Models.PostsViewModel
+
+@{
+    ViewData["Title"] = "Posts";
+}
+
+@section Style
+{
+    <link rel="stylesheet" href="~/css/post/posts.css" asp-append-version="true"/>
+}
+
+<h1>Ваши Посты</h1>
+
+@if (Model.Posts.Any())
+{
+    @await Html.PartialAsync("Partial/_PostsPartial", Model.Posts)
+    
+    <div class="pagination">
+        @if (Model.CurrentPage > 0)
+        {
+            <a class="pagination-button" href="/posts/my/@(Model.CurrentPage - 1)">Назад</a>
+        }
+        else
+        {
+            <span class="pagination-button disabled">Назад</span>
+        }
+
+        @if (Model.CurrentPage < Model.PagesCount)
+        {
+            <a class="pagination-button" href="/posts/my/@(Model.CurrentPage + 1)">Дальше</a>
+        }
+        else
+        {
+            <span class="pagination-button disabled">Дальше</span>
+        }
+    </div>
+}
+else
+{
+    <h2>У вас нет постов, но вы можете их создать.</h2>
+}

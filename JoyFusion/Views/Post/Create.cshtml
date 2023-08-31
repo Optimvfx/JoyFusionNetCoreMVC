@@ -1,0 +1,27 @@
+@model BLL.Models.Post.Request.PostCreateRequest
+
+@{
+    ViewData["Title"] = "Post Creation";
+}
+
+@section Style
+{
+    <link rel="stylesheet" href="~/css/input_form.css" asp-append-version="true"/>
+}
+
+@using (Html.BeginForm("Create", "Post", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    <div class="form-container">
+        
+        <label class="input-label" for="InputValue">Название:</label>
+        @Html.ValidationMessageFor(m => m.Title)
+        @Html.TextBoxFor(m => m.Title, new { @class = "input-field" })
+
+        <label class="input-label" for="InputValue">Название:</label>
+        @Html.ValidationMessageFor(m => m.Content)
+        @Html.TextBoxFor(m => m.Title, new { @class = "input-field" })
+        
+        <button type="submit" class="submit-button">Submit</button>
+    </div>
+}

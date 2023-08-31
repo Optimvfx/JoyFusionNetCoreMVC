@@ -1,0 +1,31 @@
+@model BLL.Models.Post.ViewModels.PostViewModel
+
+@section Style
+{
+    <link rel="stylesheet" href="~/css/post/posts.css" asp-append-version="true"/>
+}
+
+<div class="post-card">
+    <h2 class="post-title">@Model.Title</h2>
+    <p class="post-content">@Model.Content</p>
+    <div class="post-info">
+        <div class="info-box">
+            <h4 class="post-content">Publish Date:</h4>
+            <p>@Model.PublishDate</p>
+        </div>
+        <div class="info-box">
+            <h4 class="post-content">Likes:</h4>
+            <p>@Model.LikesCount</p>
+        </div>
+        <div class="info-box">
+            <h4 class="post-content">Comments:</h4>
+            <p>@Model.CommentsCount</p>
+        </div>
+    </div>
+    <div class="post-images">
+        @foreach (var imageUrl in Model.ImagesUrl)
+        {
+            <img class="post-image" src="@imageUrl" alt="Cannot load image @imageUrl" />
+        }
+    </div>
+</div>
