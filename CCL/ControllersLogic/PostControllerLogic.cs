@@ -1,29 +1,37 @@
+using System.Drawing;
 using AutoMapper;
-using BLL.Models.Post.Request;
+using BLL.Models.Post;
 using BLL.Models.Post.ViewModels;
 using BLL.Services;
+using BLL.Services.ImageService;
 using CCL.ControllersLogic.Config;
 using Common.Models;
 using DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CCL.ControllersLogic;
 
 public class PostControllerLogic
 {
     private readonly PostService _postService;
+    private readonly IImageService _imageService;
+    
     private readonly IMapper _mapper;
+    private readonly PostControllersLogicConfig _config;
 
-    private readonly int _postsPerPage;
+    private int _postsPerPage => _config.PostsPerPage;
+    private WidthHeightRange _widthHeightRange => _config.WidthHeightImageRange;
 
-    public PostControllerLogic(PostService postService, IMapper mapper, PostControllersLogicConfig config)
+    public PostControllerLogic(PostService postService, IMapper mapper, PostControllersLogicConfig config, IImageService imageService)
     {
         if (config.PostsPerPage <= 0)
             throw new AggregateException();
-            
+        
         _postService = postService;
         _mapper = mapper;
-        _postsPerPage = config.PostsPerPage;
+        _config = config;
+        _imageService = imageService;
     }
 
     public async Task<Result<IEnumerable<PostViewModel>>> TryGetTopByLikes(int page)
@@ -46,18 +54,46 @@ public class PostControllerLogic
         return await TryGetUserPosts(PostService.PostOrderType.ByDate, userId, page);
     }
     
-    public async Task<Result<Post>> TryGetById(Guid id)
+    public async Task<Result<PostViewModel>> TryGetById(Guid id)
     {
         if (await _postService.PostExist(id))
-            return new(ResultStatusCode.Success,
-                await _postService.GetByIdWithImages(id));
+        {
+            var post = _postService.GetById(id).Include(p => p.Images).First();
+
+            var vm = _mapper.Map<PostViewModel>(post);
+            
+            return new(ResultStatusCode.Success, vm);
+        }
+
+        return new(ResultStatusCode.Failure);
+    }
+    
+    public async Task<Result<PostDetalizedViewModel>> TryGetDetailsById(Guid id)
+    {
+        if (await _postService.PostExist(id))
+        {
+            var post = _postService.GetById(id)
+                .Include(p => p.Images)
+                .Include(p => p.Comments)
+                .ThenInclude(c => c.Author)
+                .First();
+
+            var vm = _mapper.Map<PostDetalizedViewModel>(post);
+
+            vm.Commens = post.Comments.Select(c => _mapper.Map<CommentViewModel>(c)).ToList();
+            
+            return new(ResultStatusCode.Success, vm);
+        }
 
         return new(ResultStatusCode.Failure);
     }
 
-    public async Task<Result<Guid>> TryCreate(Guid authorId, PostCreateRequest request)
+    public async Task<Result<Guid>> TryCreate(Guid authorId, PostCreateModel model)
     {
-        var newPostId = await _postService.CreatePost(authorId, request);
+        if (model.Images.Any(i => ImageIsValid(i) == false))
+            return new(ResultStatusCode.Failure);
+
+        var newPostId = await _postService.CreatePost(authorId, model);
         return new(ResultStatusCode.Success, newPostId);
     }
 
@@ -70,21 +106,6 @@ public class PostControllerLogic
         return true;
     }
 
-    public async Task<bool> PostIsLikedByUser(Guid userId, Guid id)
-    {
-        return await _postService.PostIsLikedByUser(userId, id);
-    }
-
-    public async Task LikePost(Guid userId, Guid id)
-    {
-        await _postService.LikePost(id, userId);
-    }
-
-    public async Task RemoveLikeFromPost(Guid authorId, Guid id)
-    {
-        await _postService.RemoveLikeFromPost(id, authorId);
-    }
-    
     public async Task<bool> PostExist(Guid authorId, Guid id)
     {
         return await _postService.PostExist(authorId, id);
@@ -103,19 +124,15 @@ public class PostControllerLogic
 
         return Math.Max(postsCount - MinimalPostsPerPage, 0) / _postsPerPage;
     }
-    
-    private int GetSkipCount(int page)
+
+    private bool ImageIsValid(Image image)
     {
-        return  page * _postsPerPage;
+        if (image == null)
+            return false;
+        
+        return _widthHeightRange.InRange(image);
     }
     
-    private async Task<bool> PageIsValid(int page, Guid? userId = null)
-    {
-        var postsCount = _postService.GetPostsCount();
-
-        return page >= 0 && page <= await GetPagesCount(userId);
-    }
-
     private async Task<Result<IEnumerable<PostViewModel>>> GetPostTopPage(PostService.PostOrderType postOrderType, int page)
     {
         if (await PageIsValid(page) == false)
@@ -139,5 +156,17 @@ public class PostControllerLogic
     private IEnumerable<PostViewModel> MapPosts(IEnumerable<Post> posts)
     {
         return posts.Select(p => _mapper.Map<PostViewModel>(p));
+    }
+
+    private async Task<bool> PageIsValid(int page, Guid? userId = null)
+    {
+        var postsCount = _postService.GetPostsCount();
+
+        return page >= 0 && page <= await GetPagesCount(userId);
+    }
+   
+    private int GetSkipCount(int page)
+    {
+        return  page * _postsPerPage;
     }
 }

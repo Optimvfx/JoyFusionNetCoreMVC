@@ -1,4 +1,5 @@
 using BLL;
+using BLL.Services.TimeService;
 using CCL;
 using DAL;
 using DAL.Entities;
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connection = builder.Configuration.GetConnectionString("DefaultConnectionString");
 builder.Services.AddDatabase(connection);
 
+builder.Services.AddCustumizableServices();
 builder.Services.AddServices();
 builder.Services.AddControllersLogic();
 

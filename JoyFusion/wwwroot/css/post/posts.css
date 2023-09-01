@@ -1,3 +1,15 @@
+a {
+    text-decoration: none; 
+    outline: none;
+    color: #383838; 
+    transition: color 0.3s;
+    cursor: pointer;
+}
+
+a:hover {
+    color: #a8e2ff;
+}
+
 .post-card {
     border: 1px solid #ccc;
     padding: 10px;
@@ -34,15 +46,16 @@
 
 .post-images {
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
     margin-bottom: 10px;
 }
 
 .post-image {
-    max-width: 100px;
-    max-height: 100px;
-    margin-right: 10px;
-    margin-bottom: 10px;
+    max-width: 400px;
+    max-height: 400px;
+    margin: 15px;
+    border-radius: 10px;
 }
 
 .pagination-button {
@@ -74,6 +87,11 @@
 .pagination-button.disabled {
     background-color: #333;
     cursor: not-allowed;
+}
+
+.pagination-button.disabled:hover {
+    background-color: #444;
+    color: #fff;
 }
 
 .pagination-button:hover {

@@ -21,10 +21,13 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Migrations\" />
+      <Reference Include="System.Drawing.Common">
+        <HintPath>..\JoyFusionInitializer\bin\Debug\net7.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@
 }
 
 <div class="post-card">
-    <h2 class="post-title">@Model.Title</h2>
+    <h2 class="post-title"><a href="/posts/@Model.Id">@Model.Title</a></h2>
     <p class="post-content">@Model.Content</p>
     <div class="post-info">
         <div class="info-box">
@@ -23,9 +23,9 @@
         </div>
     </div>
     <div class="post-images">
-        @foreach (var imageUrl in Model.ImagesUrl)
+        @foreach (var imageData in Model.ImagesData)
         {
-            <img class="post-image" src="@imageUrl" alt="Cannot load image @imageUrl" />
+             <img class="post-image" src="data:image/jpeg;base64,@Convert.ToBase64String(imageData)" />
         }
     </div>
 </div>

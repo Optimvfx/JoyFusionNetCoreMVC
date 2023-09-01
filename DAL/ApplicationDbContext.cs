@@ -18,7 +18,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Like> Likes => Set<Like>();
     
-    public DbSet<Image> Images => Set<Image>();
+    public DbSet<ImageEntity> Images => Set<ImageEntity>();
 
     public DbSet<Comment> Comments => Set<Comment>();
 

@@ -25,5 +25,5 @@ public class Post
     [Required] public virtual ICollection<Comment> Comments { get; set; } = null!;
     [NotNull] public uint CommentsCount { get; internal set;} = 0;
     
-    [Required] public virtual ICollection<Image> Images { get; set; } = null!;
+    [Required] public virtual ICollection<ImageEntity> Images { get; set; } = null!;
 }

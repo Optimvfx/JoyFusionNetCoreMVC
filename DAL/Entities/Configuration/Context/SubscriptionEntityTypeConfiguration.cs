@@ -8,7 +8,5 @@ public class SubscriptionEntityTypeConfiguration : IEntityTypeConfiguration<Subs
     public void Configure(EntityTypeBuilder<Subscription> builder)
     {
         builder.HasKey(s => new {s.SubscriberId, s.TargetUserId});
-        builder.HasAlternateKey(s => s.SubscriberId);
-        builder.HasAlternateKey(s => s.TargetUserId);
     }
 }

@@ -1,0 +1,51 @@
+@model BLL.Models.Post.ViewModels.PostDetalizedViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+@section Style
+{
+    <link rel="stylesheet" href="~/css/post/posts.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/post/post_details.css" asp-append-version="true"/>
+}
+
+<div class="post-card">
+    <h2 class="post-title">@Model.Title</h2>
+    <p class="post-content">@Model.Content</p>
+    <div class="post-info">
+        <div class="info-box">
+            <h4 class="post-content">Publish Date:</h4>
+            <p>@Model.PublishDate</p>
+        </div>
+        <div class="info-box">
+            <h4 class="post-content">Likes:</h4>
+            <p>@Model.LikesCount</p>
+        </div>
+        <div class="info-box">
+            <h4 class="post-content">Comments:</h4>
+            <p>@Model.CommentsCount</p>
+        </div>
+    </div>
+    
+    <div class="post-images">
+        @foreach (var imageData in Model.ImagesData)
+        {
+            <img class="post-image" src="data:image/jpeg;base64,@Convert.ToBase64String(imageData)" />
+        }
+    </div>
+    
+     <div class="comments">
+            <h3>Comments:</h3>
+            <ul>
+                @foreach (var comment in Model.Commens.OrderByDescending(c => c.CreationDate))
+                {
+                    <li>
+                        <strong>@comment.AuthorNick</strong>
+                        <p>@(comment.Content ?? String.Empty)</p>
+                        <small>@comment.CreationDate.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                    </li>
+                }
+            </ul>
+        </div>
+</div>

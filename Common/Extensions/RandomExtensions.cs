@@ -1,16 +1,20 @@
 using System.Text;
+using Common.Models;
 
 namespace Common.Extensions;
 
 public static class RandomExtensions
 {
-    public static bool NextBool(this Random rand)
+    public static bool NextBool(this Random rand, Procent? trueProcent = null)
     {
-        return rand.Next(2) == 0;
+        var procent = trueProcent ?? Procent.Half;
+        return rand.NextDouble() < procent.Value;
     }
     
-    public static string NextString(this Random random, int length)
+    public static string NextString(this Random random, int length, Procent? emptyProcent = null)
     {
+        emptyProcent = emptyProcent ?? new Procent(Procent.Min);
+        
         if (length < 0)
             throw new AggregateException();
         
@@ -19,6 +23,12 @@ public static class RandomExtensions
 
         for (int i = 0; i < length; i++)
         {
+            if (random.NextBool(emptyProcent))
+            {
+                stringBuilder.Append(' ');
+                continue;
+            }
+            
             int index = random.Next(chars.Length);
             char randomChar = chars[index];
             stringBuilder.Append(randomChar);

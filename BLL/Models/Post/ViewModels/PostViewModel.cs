@@ -16,5 +16,5 @@ public class PostViewModel
 
     public int CommentsCount  { get; set; }
     
-    public ICollection<string> ImagesUrl { get; set; } = null!;
+    public ICollection<byte[]> ImagesData { get; set; } = null!;
 }

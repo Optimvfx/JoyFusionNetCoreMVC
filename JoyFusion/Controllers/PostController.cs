@@ -1,6 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using AutoMapper;
-using BLL.Models.Post.Request;
+using BLL.Models.Post;
 using BLL.Models.Post.ViewModels;
 using CCL.Base;
 using CCL.ControllersLogic;
@@ -14,11 +13,13 @@ namespace JoyFusion.Controllers;
 public class PostController : BaseAuthController
 {
     private readonly PostControllerLogic _logic;
+    private readonly ReactionsControllerLogic _reactionsLogic;
     private readonly IMapper _mapper;
 
-    public PostController(PostControllerLogic logic, IMapper mapper)
+    public PostController(PostControllerLogic logic, ReactionsControllerLogic reactionsLogic, IMapper mapper)
     {
         _logic = logic;
+        _reactionsLogic = reactionsLogic;
         _mapper = mapper;
     }
 
@@ -34,7 +35,7 @@ public class PostController : BaseAuthController
     
     #region PostsPageViews
 
-    [HttpGet("my/{page}")]
+    [HttpGet("my/{page=0}")]
     [Authorize]
     public async Task<IActionResult> GetMyPosts(int page)
     {
@@ -45,7 +46,7 @@ public class PostController : BaseAuthController
         return RedirectDefaultUrl();
     }
 
-    [HttpGet("top/popular/{page}")]
+    [HttpGet("top/popular/{page=0}")]
     public async Task<IActionResult> GetPopular(int page)
     {
         var result = await _logic.TryGetTopByLikes(page);
@@ -55,7 +56,7 @@ public class PostController : BaseAuthController
         return RedirectDefaultUrl();
     }
     
-    [HttpGet("top/new/{page}")]
+    [HttpGet("top/new/{page=0}")]
     public async Task<IActionResult> GetNew(int page)
     {
         var result = await _logic.TryGetTopByPublishDate(page);
@@ -68,13 +69,13 @@ public class PostController : BaseAuthController
     #endregion
     
     [HttpGet("{id}")]
-    public async Task<ActionResult<PostViewModel>> GetDetails(Guid id)
+    public async Task<ActionResult> GetDetails(Guid id)
     {
-        var result = await _logic.TryGetById(id);
+        var result = await _logic.TryGetDetailsById(id);
         
         if (result.IsSuccess())
         {
-            return _mapper.Map<PostViewModel>(result.Value);
+            return View(result.Value);
         }
 
         return BadRequest();
@@ -82,9 +83,9 @@ public class PostController : BaseAuthController
     
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<Guid>> Create(PostCreateRequest request)
+    public async Task<ActionResult<Guid>> Create(PostCreateModel model)
     {
-        var result = await _logic.TryCreate(GetUserId().Value, request);
+        var result = await _logic.TryCreate(GetUserId().Value, model);
         
         if (result.IsSuccess())
         {
@@ -113,10 +114,10 @@ public class PostController : BaseAuthController
         if (await _logic.PostExist(id) == false)
             return BadRequest("Post not found");
         
-        if (await _logic.PostIsLikedByUser(GetUserId().Value, id))
+        if (await _reactionsLogic.PostIsLikedByUser(GetUserId().Value, id))
             return BadRequest("Post already liked");
 
-        await _logic.LikePost(GetUserId().Value, id);
+        await _reactionsLogic.LikePost(GetUserId().Value, id);
 
         return Ok();
     }
@@ -128,48 +129,12 @@ public class PostController : BaseAuthController
         if (await _logic.PostExist(id) == false)
             return BadRequest("Post not found");
             
-        if (await _logic.PostIsLikedByUser(GetUserId().Value, id) == false)
+        if (await  _reactionsLogic.PostIsLikedByUser(GetUserId().Value, id) == false)
             return BadRequest("Post not liked by this user");
 
-        await _logic.RemoveLikeFromPost(GetUserId().Value, id);
+        await  _reactionsLogic.RemoveLikeFromPost(GetUserId().Value, id);
 
         return Ok();
-    }
-
-    #endregion
-
-    #region NonAction
-
-    [NonAction]
-    public async Task<bool> PostHaveLikeFromUser(Guid userId, Guid id)
-    {
-        try
-        {
-            return await _logic.PostIsLikedByUser(userId, id);
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-    }
-    
-    [NonAction]
-    public async Task<int> GetPostPageCount()
-    {
-        return await _logic.GetPagesCount();
-    }
-    
-    [NonAction]
-    public async Task<ActionResult<int>> GetUserPostPagesCount(Guid id)
-    {
-        try
-        {
-            return await _logic.GetPagesCount(id);
-        }
-        catch (Exception e)
-        {
-            return -1;
-        }
     }
 
     #endregion

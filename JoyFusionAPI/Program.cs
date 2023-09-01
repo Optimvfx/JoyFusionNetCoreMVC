@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder();
 var connection = builder.Configuration.GetConnectionString("DefaultConnectionString");
 builder.Services.AddDatabase(connection);
 
+builder.Services.AddCustumizableServices();
 builder.Services.AddServices();
 builder.Services.AddControllersLogic();
 
